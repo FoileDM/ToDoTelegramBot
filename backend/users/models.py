@@ -39,6 +39,7 @@ class UserManager(BaseUserManager):
         if not username:
             raise ValueError("The given username must be set")
         user = self.model(username=username, password=password, **extra_fields)
+        user.set_password(password)
         if not user.id:
             user.id = generate_pk("U")
         user.save(using=self._db)

@@ -49,7 +49,7 @@ class Settings(BaseSettings):
     # Health server
     health_port: int = Field(8000, alias="HEALTH_PORT")
 
-    model_config = SettingsConfigDict(env_file=".env", case_sensitive=False)
+    model_config = SettingsConfigDict(env_file=".env", case_sensitive=False, extra="ignore")
 
 
 settings = Settings()

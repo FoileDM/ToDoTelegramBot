@@ -92,6 +92,7 @@ class Task(models.Model):
         description (str): Описание задачи.
         created_at (datetime): Дата и время создания задачи.
         due_at (datetime): Дата и время выполнения задачи (опционально).
+        due_notified_at (datetime): Время отправки уведомления о приближении срока (опционально).
         status (str): Текущий статус задачи.
         categories (ManyToManyField): Категории, к которым относится задача.
     """
@@ -101,6 +102,7 @@ class Task(models.Model):
     description = models.TextField(blank=True, default="")
     created_at = models.DateTimeField(auto_now_add=True)
     due_at = models.DateTimeField(null=True, blank=True)
+    due_notified_at = models.DateTimeField(null=True, blank=True)
     status = models.CharField(max_length=16, choices=TaskStatus.choices, default=TaskStatus.ACTIVE)
     categories = models.ManyToManyField(Category, related_name="tasks", blank=True)
 

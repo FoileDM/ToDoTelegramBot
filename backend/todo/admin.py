@@ -47,10 +47,18 @@ class TaskAdmin(admin.ModelAdmin):
             горизонтального фильтра.
     """
 
-    list_display = ("id", "user", "title", "status", "created_at", "due_at")
-    list_filter = ("status", "user", "created_at", "due_at")
+    list_display = (
+        "id",
+        "user",
+        "title",
+        "status",
+        "created_at",
+        "due_at",
+        "due_notified_at",
+    )
+    list_filter = ("status", "user", "created_at", "due_at", "due_notified_at")
     search_fields = ("title", "description")
-    readonly_fields = ("id", "created_at")
+    readonly_fields = ("id", "created_at", "due_notified_at")
     ordering = ("-created_at",)
 
     filter_horizontal = ("categories",)

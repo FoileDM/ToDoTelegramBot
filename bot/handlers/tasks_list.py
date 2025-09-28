@@ -33,8 +33,9 @@ async def list_tasks(message: Message):
             return
         lines = [fmt_task_line(t) for t in items[:10]]
         await message.answer("\n".join(lines))
+        await message.answer("Для добавления задачи воспользуйся командой /add.")
         await message.answer("Для редактирования задачи воспользуйся командой /edittask.")
-        await message.answer("Чтобы удалить задачу, введи /deltask.")
+        await message.answer("Для удаления задачи воспользуйся командой /deltask.")
     except Exception as e:
         await message.answer(f"Ошибка запроса задач: {e}")
     finally:
@@ -65,7 +66,9 @@ async def list_categories(message: Message):
             return
         txt = "\n".join(f"• {c['name']}" for c in cats)
         await message.answer(txt)
-        await message.answer("Чтобы переименовать категорию, воспользуйся командой /editcat.")
+        await message.answer("Для добавления категории воспользуйся командой /addcat.")
+        await message.answer("Для редактирования категории воспользуйся командой /editcat.")
+        await message.answer("Для удаления категории воспользуйся командой /delcat.")
     except Exception as e:
         await message.answer(f"Ошибка запроса категорий: {e}")
     finally:
@@ -83,17 +86,6 @@ async def add_task_hint(message: Message) -> None:
     await message.answer("Введи /add чтобы создать задачу.")
 
 
-@router.message(F.text == "Добавить категорию")
-async def add_category_hint(message: Message) -> None:
-    """
-    Отправляет пользователю подсказку для добавления новой категории.
-
-    Args:
-        message (Message): Сообщение от пользователя.
-    """
-    await message.answer("Введи /addcat чтобы создать категорию.")
-
-
 @router.message(F.text == "Редактировать задачу")
 async def edit_task_hint(message: Message) -> None:
     """
@@ -105,8 +97,30 @@ async def edit_task_hint(message: Message) -> None:
     await message.answer("Введи /edittask чтобы изменить существующую задачу.")
 
 
+@router.message(F.text == "Удалить задачу")
+async def delete_task_hint(message: Message) -> None:
+    """
+    Обрабатывает сообщение с текстом "Удалить задачу" и предоставляет подсказку.
+
+    Args:
+        message (Message): Входящее сообщение от пользователя.
+    """
+    await message.answer("Введи /deltask чтобы удалить задачу.")
+
+
+@router.message(F.text == "Добавить категорию")
+async def add_category_hint(message: Message) -> None:
+    """
+    Отправляет пользователю подсказку для добавления новой категории.
+
+    Args:
+        message (Message): Сообщение от пользователя.
+    """
+    await message.answer("Введи /addcat чтобы создать категорию.")
+
+
 @router.message(F.text == "Редактировать категорию")
-async def edit_task_hint(message: Message) -> None:
+async def edit_category_hint(message: Message) -> None:
     """
     Обрабатывает сообщение для изменения категории.
 
@@ -117,11 +131,11 @@ async def edit_task_hint(message: Message) -> None:
 
 
 @router.message(F.text == "Удалить задачу")
-async def delete_task_hint(message: Message) -> None:
+async def delete_category_hint(message: Message) -> None:
     """
-    Обрабатывает сообщение с текстом "Удалить задачу" и предоставляет подсказку.
+    Обрабатывает сообщение для удаления задачи.
 
     Args:
-        message (Message): Входящее сообщение от пользователя.
+        message (Message): Объект сообщения, полученного от пользователя.
     """
-    await message.answer("Введи /deltask чтобы удалить задачу.")
+    await message.answer("Введи /delcat чтобы удалить задачу.")

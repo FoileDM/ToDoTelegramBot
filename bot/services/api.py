@@ -167,6 +167,21 @@ class BackendAPI:
         _raise_for_client(resp)
         return resp.json()
 
+    async def delete_category(self, *, tg_id: int, category_id: str) -> None:
+        """
+        Удаляет категорию пользователя по идентификаторам.
+
+        Args:
+            tg_id (int): Идентификатор Telegram-пользователя.
+            category_id (str): Идентификатор категории для удаления.
+
+        Raises:
+            HTTPException: Возникает, если запрос завершился ошибкой.
+        """
+        resp = await self._request("DELETE", f"/categories/{category_id}/", tg_id=tg_id)
+        _raise_for_client(resp)
+        return None
+
     async def list_tasks(self, *, tg_id: int, page: int = 1, status: str | None = None,
                          category: str | None = None) -> dict[str, Any]:
         """

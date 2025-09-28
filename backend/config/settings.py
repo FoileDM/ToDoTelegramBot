@@ -196,7 +196,7 @@ CELERY_ENABLE_UTC = parse_bool_env("CELERY_ENABLE_UTC", True)
 CELERY_IMPORTS = parse_csv_env("CELERY_IMPORTS", "services.telegram_notifications")
 
 # Telegram bot settings
-_TELEGRAM_BOT_TOKEN_RAW = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
+_TELEGRAM_BOT_TOKEN_RAW = os.getenv("BOT_TOKEN", "").strip()
 TELEGRAM_BOT_TOKEN = _TELEGRAM_BOT_TOKEN_RAW
 
 _TELEGRAM_API_BASE_DEFAULT = "https://api.telegram.org"

@@ -60,7 +60,7 @@ async def list_categories(message: Message):
         if not cats:
             await message.answer("Категорий нет.")
             return
-        txt = "\n".join(f"• {c['name']} (/{c['slug']})" for c in cats)
+        txt = "\n".join(f"• {c['name']}" for c in cats)
         await message.answer(txt)
     except Exception as e:
         await message.answer(f"Ошибка запроса категорий: {e}")

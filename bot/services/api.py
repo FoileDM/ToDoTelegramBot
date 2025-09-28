@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import asyncio
-from typing import Any
+from typing import Any, Coroutine
 
 import httpx
+from httpx import Response
 
 from core.config import settings
 from core.jwt import build_bot_jwt

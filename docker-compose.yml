@@ -1,15 +1,24 @@
 services:
   postgres:
     image: postgres:15-alpine
-    env_file: [.env]
+    env_file: [ .env ]
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-todo}
       POSTGRES_USER: ${POSTGRES_USER:-todo}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-todo}
-    ports: ["5432:5432"]
-    volumes: [db_data:/var/lib/postgresql/data]
+    ports: [ "5432:5432" ]
+    volumes: [ db_data:/var/lib/postgresql/data ]
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB -h 127.0.0.1 || exit 1"]
+      test: [ "CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB -h 127.0.0.1 || exit 1" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7.4-alpine
+    ports: [ "6379:6379" ]
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -18,11 +27,11 @@ services:
     build:
       context: .
       dockerfile: backend/Dockerfile
-    env_file: [.env]
+    env_file: [ .env ]
     depends_on:
       postgres:
         condition: service_healthy
-    ports: ["8000:8000"]
+    ports: [ "8000:8000" ]
     volumes:
       - ./backend:/app/backend
     command: >
@@ -31,7 +40,7 @@ services:
         python manage.py runserver 0.0.0.0:8000
       "
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://localhost:8000/api/health/ || exit 1"]
+      test: [ "CMD-SHELL", "curl -fsS http://localhost:8000/api/health/ || exit 1" ]
       interval: 10s
       timeout: 5s
       retries: 12
@@ -49,10 +58,38 @@ services:
     command: >
       bash -c "watchfiles 'python -m main' /app/bot"
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/health || exit 1"]
+      test: [ "CMD-SHELL", "curl -fsS http://localhost:8080/health || exit 1" ]
       interval: 10s
       timeout: 5s
       retries: 12
+
+  celery_worker:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    env_file: [.env]
+    depends_on:
+      web:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app/backend
+    command: celery -A config worker --loglevel=info
+
+  celery_beat:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    env_file: [.env]
+    depends_on:
+      web:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app/backend
+    command: celery -A config beat --loglevel=info
 
 volumes:
   db_data:

@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 import os
 from pathlib import Path
+from typing import Tuple
 
 from dotenv import load_dotenv
 
@@ -19,6 +20,42 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 for env_path in (BASE_DIR / ".env", BASE_DIR.parent / ".env"):
     if env_path.exists():
         load_dotenv(env_path, override=False)
+
+
+def parse_bool_env(name: str, default: bool) -> bool:
+    """
+    Преобразует значение переменной окружения в булево значение.
+
+    Args:
+        name (str): Имя переменной окружения.
+        default (bool): Значение по умолчанию, если переменная окружения отсутствует.
+
+    Returns:
+        bool: Результат преобразования значения переменной окружения в булево.
+    """
+    raw_value = os.getenv(name)
+    if raw_value is None:
+        return default
+    return raw_value.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def parse_csv_env(name: str, default: str) -> Tuple[str, ...]:
+    """
+    Извлекает переменную окружения в виде списка строк, разделенных запятыми.
+
+    Args:
+        name (str): Название переменной окружения.
+        default (str): Значение по умолчанию, которое используется, если переменная окружения не задана.
+
+    Returns:
+        Tuple[str, ...]: Кортеж строк, полученный из переменной окружения.
+
+    Raises:
+        KeyError: Если переменная окружения не найдена и значение default не указано.
+    """
+    raw_value = os.getenv(name, default)
+    return tuple(value.strip() for value in raw_value.split(",") if value.strip())
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -147,3 +184,12 @@ BOT_JWT_AUD = os.getenv("BOT_JWT_AUD", "todo-backend")
 BOT_JWT_SCOPE = os.getenv("BOT_JWT_SCOPE", "bot:act_as_user")
 BOT_JWT_ALG = os.getenv("BOT_JWT_ALG", "RS256")
 BOT_JWT_LEEWAY = int(os.getenv("BOT_JWT_LEEWAY", "45"))
+
+# Celery settings
+CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://redis:6379/0")
+CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", CELERY_BROKER_URL)
+CELERY_ACCEPT_CONTENT = parse_csv_env("CELERY_ACCEPT_CONTENT", "json")
+CELERY_TASK_SERIALIZER = os.getenv("CELERY_TASK_SERIALIZER", "json")
+CELERY_RESULT_SERIALIZER = os.getenv("CELERY_RESULT_SERIALIZER", CELERY_TASK_SERIALIZER)
+CELERY_TIMEZONE = os.getenv("CELERY_TIMEZONE", TIME_ZONE)
+CELERY_ENABLE_UTC = parse_bool_env("CELERY_ENABLE_UTC", True)

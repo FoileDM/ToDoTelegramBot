@@ -34,6 +34,7 @@ async def list_tasks(message: Message):
         lines = [fmt_task_line(t) for t in items[:10]]
         await message.answer("\n".join(lines))
         await message.answer("Для редактирования задачи воспользуйся командой /edittask.")
+        await message.answer("Чтобы удалить задачу, введи /deltask.")
     except Exception as e:
         await message.answer(f"Ошибка запроса задач: {e}")
     finally:
@@ -101,3 +102,14 @@ async def edit_task_hint(message: Message) -> None:
         message (Message): Сообщение от пользователя.
     """
     await message.answer("Введи /edittask чтобы изменить существующую задачу.")
+
+
+@router.message(F.text == "Удалить задачу")
+async def delete_task_hint(message: Message) -> None:
+    """
+    Обрабатывает сообщение с текстом "Удалить задачу" и предоставляет подсказку.
+
+    Args:
+        message (Message): Входящее сообщение от пользователя.
+    """
+    await message.answer("Введи /deltask чтобы удалить задачу.")

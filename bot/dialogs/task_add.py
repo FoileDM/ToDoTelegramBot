@@ -12,7 +12,7 @@ from aiogram_dialog.widgets.kbd import Button, Back, Cancel, Next, Select, Scrol
 from aiogram_dialog.widgets.text import Const, Format
 from services.api import BackendAPI
 
-from utils.dt import parse_user_datetime
+from utils.dt import format_dt_user, parse_user_datetime
 
 
 class AddTaskSG(StatesGroup):
@@ -159,7 +159,43 @@ async def on_cat_select(c: CallbackQuery, widget: Select, manager: DialogManager
     manager.dialog_data["cats_sel"] = list(sel)
 
 
-async def finalize_creation(c: CallbackQuery, widget: Button, manager: DialogManager):
+async def confirm_getter(dialog_manager: DialogManager, **kwargs) -> dict[str, dict[str, str]]:
+    """
+    Генерирует сводку данных на основе информации из диалог-менеджера.
+
+    Args:
+        dialog_manager (DialogManager): Объект диалог-менеджера, содержащий необходимые данные.
+        **kwargs: Дополнительные параметры.
+
+    Returns:
+        dict[str, dict[str, str]]: Словарь, содержащий сводку с ключами "title", "description",
+        "due_at" и "categories". Поля будут содержать значения либо из данных диалога, либо
+        стандартные значения, если данные отсутствуют.
+
+    """
+    title = dialog_manager.dialog_data.get("title", "—")
+    description = dialog_manager.dialog_data.get("description") or "—"
+    due_at_iso = dialog_manager.dialog_data.get("due_at_iso")
+    categories_selected = set(dialog_manager.dialog_data.get("cats_sel", []))
+    categories_all = dialog_manager.dialog_data.get("cats_all", [])
+
+    categories_readable_list = [
+        str(category.get("name", "—"))
+        for category in categories_all
+        if str(category.get("id")) in categories_selected
+    ]
+    categories_readable = ", ".join(categories_readable_list)
+
+    summary = {
+        "title": title,
+        "description": description,
+        "due_at": format_dt_user(due_at_iso),
+        "categories": categories_readable or "—",
+    }
+    return {"summary": summary}
+
+
+async def finalize_creation(c: CallbackQuery, widget: Button, manager: DialogManager) -> None:
     """
     Завершает процесс создания задачи с использованием информации из текущего диалога.
 
@@ -191,7 +227,7 @@ async def finalize_creation(c: CallbackQuery, widget: Button, manager: DialogMan
     await manager.done()
 
 
-async def skip_desc(c: CallbackQuery, widget: Button, manager: DialogManager):
+async def skip_desc(c: CallbackQuery, widget: Button, manager: DialogManager) -> None:
     """
     Очищает описание задачи и переключает диалог на шаг ввода срока выполнения.
 
@@ -204,7 +240,7 @@ async def skip_desc(c: CallbackQuery, widget: Button, manager: DialogManager):
     await manager.switch_to(AddTaskSG.due_at)
 
 
-async def skip_due(c: CallbackQuery, widget: Button, manager: DialogManager):
+async def skip_due(c: CallbackQuery, widget: Button, manager: DialogManager) -> None:
     """
     Сбрасывает значение даты выполнения задачи и переключает диалог на выбор категории.
 
@@ -262,10 +298,15 @@ add_task_dialog = Dialog(
         state=AddTaskSG.categories,
     ),
     Window(
-        Const("Создаём задачу?"),
+        Const("Проверь данные задачи:"),
+        Format("Название: {summary[title]}"),
+        Format("Описание: {summary[description]}"),
+        Format("Дедлайн: {summary[due_at]}"),
+        Format("Категории: {summary[categories]}"),
         Button(Const("Создать"), id="create_btn", on_click=finalize_creation),
         Back(Const("Назад")),
         Cancel(Const("Отмена")),
+        getter=confirm_getter,
         state=AddTaskSG.confirm,
     ),
 )

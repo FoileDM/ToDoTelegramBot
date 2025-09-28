@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from aiogram import Router, F
+from aiogram import F, Router
 from aiogram.types import Message
 from services.api import BackendAPI
 
@@ -33,6 +33,7 @@ async def list_tasks(message: Message):
             return
         lines = [fmt_task_line(t) for t in items[:10]]
         await message.answer("\n".join(lines))
+        await message.answer("Для редактирования задачи воспользуйся командой /edittask.")
     except Exception as e:
         await message.answer(f"Ошибка запроса задач: {e}")
     finally:
@@ -70,7 +71,7 @@ async def list_categories(message: Message):
 
 
 @router.message(F.text == "Добавить задачу")
-async def add_task_hint(message: Message):
+async def add_task_hint(message: Message) -> None:
     """
     Обрабатывает сообщение для подсказки добавления задачи.
 
@@ -81,7 +82,7 @@ async def add_task_hint(message: Message):
 
 
 @router.message(F.text == "Добавить категорию")
-async def add_task_hint(message: Message):
+async def add_category_hint(message: Message) -> None:
     """
     Отправляет пользователю подсказку для добавления новой категории.
 
@@ -89,3 +90,14 @@ async def add_task_hint(message: Message):
         message (Message): Сообщение от пользователя.
     """
     await message.answer("Введи /addcat чтобы создать категорию.")
+
+
+@router.message(F.text == "Редактировать задачу")
+async def edit_task_hint(message: Message) -> None:
+    """
+    Обрабатывает сообщение с текстом "Редактировать задачу".
+
+    Args:
+        message (Message): Сообщение от пользователя.
+    """
+    await message.answer("Введи /edittask чтобы изменить существующую задачу.")

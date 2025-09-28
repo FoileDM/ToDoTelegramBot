@@ -1,4 +1,3 @@
-"""Модуль для форматирования задач и категорий в строки."""
 
 from __future__ import annotations
 
@@ -25,7 +24,9 @@ def fmt_task_line(t: dict) -> str:
     created = format_dt_user(t.get("created_at"))
     status = t.get("status", "active")
     title = t.get("title", "")
-    return f"• [{status}] {title} (создана: {created}) | {cats_txt}"
+    task_id = t.get("id")
+    task_id_display = f"#{task_id}" if task_id is not None else "#—"
+    return f"• {task_id_display} [{status}] {title} (создана: {created}) | {cats_txt}"
 
 
 def fmt_categories_list(cats: Iterable[dict]) -> str:

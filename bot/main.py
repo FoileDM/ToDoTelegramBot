@@ -6,16 +6,17 @@ import asyncio
 import logging
 
 import uvloop
-from aiohttp import web
 from aiogram import Bot, Dispatcher
-from aiogram.types import Message
 from aiogram.filters import Command
+from aiogram.types import Message
 from aiogram_dialog import setup_dialogs, DialogManager, StartMode
+from aiohttp import web
 
 from core.config import settings
 from dialogs.add_category import add_category_dialog, AddCategorySG
 from dialogs.start import router as start_router
 from dialogs.task_add import add_task_dialog, AddTaskSG
+from dialogs.task_edit import edit_task_dialog, EditTaskSG
 from handlers.tasks_list import router as tasks_router
 from middlewares.rate_limit import RateLimitMiddleware
 from web.health import make_app
@@ -62,6 +63,7 @@ async def main():
     dp.include_router(start_router)
     dp.include_router(tasks_router)
     dp.include_router(add_task_dialog)
+    dp.include_router(edit_task_dialog)
     dp.include_router(add_category_dialog)
 
     # инициализация диалогов (v2)
@@ -81,6 +83,11 @@ async def main():
             dialog_manager (DialogManager): Менеджер диалога.
         """
         await dialog_manager.start(AddTaskSG.title, mode=StartMode.RESET_STACK)
+
+    @dp.message(Command("edittask"))
+    async def start_edit_dialog(message: Message, dialog_manager: DialogManager):
+        """Запускает диалог редактирования задачи."""
+        await dialog_manager.start(EditTaskSG.choose_task, mode=StartMode.RESET_STACK)
 
     @dp.message(Command("addcat"))
     async def start_add_category(message: Message, dialog_manager: DialogManager):

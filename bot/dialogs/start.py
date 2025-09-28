@@ -29,8 +29,8 @@ async def cmd_start(message: Message):
         await api.register(tg_id=tg_id, username=username)
         kb = ReplyKeyboardMarkup(
             keyboard=[
-                [KeyboardButton(text="Мои задачи"), KeyboardButton(text="Добавить задачу")],
-                [KeyboardButton(text="Мои категории"), KeyboardButton(text="Добавить категорию")],
+                [KeyboardButton(text="Мои задачи")],
+                [KeyboardButton(text="Мои категории")],
             ],
             resize_keyboard=True,
         )

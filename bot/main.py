@@ -20,6 +20,7 @@ from dialogs.start import router as start_router
 from dialogs.task_add import add_task_dialog, AddTaskSG
 from dialogs.task_delete import DeleteTaskSG, delete_task_dialog
 from dialogs.task_edit import edit_task_dialog, EditTaskSG
+from dialogs.task_status import change_task_status_dialog, ChangeTaskStatusSG
 from handlers.tasks_list import router as tasks_router
 from middlewares.rate_limit import RateLimitMiddleware
 from web.health import make_app
@@ -68,6 +69,7 @@ async def main():
     dp.include_router(add_task_dialog)
     dp.include_router(edit_task_dialog)
     dp.include_router(delete_task_dialog)
+    dp.include_router(change_task_status_dialog)
     dp.include_router(add_category_dialog)
     dp.include_router(edit_category_dialog)
     dp.include_router(delete_category_dialog)
@@ -100,6 +102,20 @@ async def main():
             dialog_manager (DialogManager): Менеджер управления диалогом.
         """
         await dialog_manager.start(EditTaskSG.choose_task, mode=StartMode.RESET_STACK)
+
+    @dp.message(Command("status"))
+    async def start_change_status_dialog(
+            message: Message, dialog_manager: DialogManager
+    ) -> None:
+        """Запускает диалог изменения статуса задачи.
+
+        Args:
+            message: Сообщение пользователя, инициирующее команду.
+            dialog_manager: Менеджер диалога для запуска сценария.
+        """
+        await dialog_manager.start(
+            ChangeTaskStatusSG.choose_task, mode=StartMode.RESET_STACK
+        )
 
     @dp.message(Command("deltask"))
     async def start_delete_dialog(message: Message, dialog_manager: DialogManager) -> None:

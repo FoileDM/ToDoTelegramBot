@@ -35,6 +35,7 @@ async def list_tasks(message: Message):
         await message.answer("\n".join(lines))
         await message.answer("Для добавления задачи воспользуйся командой /add.")
         await message.answer("Для редактирования задачи воспользуйся командой /edittask.")
+        await message.answer("Для редактирования статуса задачи воспользуйся командой /status.")
         await message.answer("Для удаления задачи воспользуйся командой /deltask.")
     except Exception as e:
         await message.answer(f"Ошибка запроса задач: {e}")
@@ -95,6 +96,17 @@ async def edit_task_hint(message: Message) -> None:
         message (Message): Сообщение от пользователя.
     """
     await message.answer("Введи /edittask чтобы изменить существующую задачу.")
+
+
+@router.message(F.text == "Редактировать статус")
+async def edit_task_hint(message: Message) -> None:
+    """
+    Обрабатывает команду "Редактировать статус" для изменения статуса задачи.
+
+    Args:
+        message (Message): Объект сообщения, содержащее текст команды.
+    """
+    await message.answer("Введи /status чтобы изменить статус задачи.")
 
 
 @router.message(F.text == "Удалить задачу")

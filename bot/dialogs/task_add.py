@@ -110,11 +110,27 @@ async def categories_getter(dialog_manager: DialogManager, **kwargs):
     api = BackendAPI()
     tg_id = dialog_manager.event.from_user.id
     try:
-        cats = await api.list_categories(tg_id=tg_id)
-        # сохраняем список для выбора
-        dialog_manager.dialog_data["cats_all"] = cats
-        selected = dialog_manager.dialog_data.get("cats_sel", [])
-        return {"cats": [(c["name"], c["id"]) for c in cats], "selected": selected}
+        cats = await api.list_categories(tg_id=tg_id)  # [{id, name}, ...]
+        dialog_manager.dialog_data["cats_all"] = cats  # сохраним «сырые» из API
+
+        selected = set(dialog_manager.dialog_data.get("cats_sel", []))
+
+        items = []
+        for c in cats:
+            cid = c["id"]
+            items.append({
+                "id": cid,
+                "label": c["name"],
+                "check": "✅" if cid in selected else "☐",
+            })
+
+        sel_names = [c["name"] for c in cats if c["id"] in selected]
+        return {
+            "cats": items,                            # для Select
+            "selected": list(selected),               # если где-то нужно
+            "sel_count": len(selected),               # для хедера
+            "sel_list": ", ".join(sel_names) or "—",  # для хедера
+        }
     finally:
         await api.aclose()
 
@@ -133,6 +149,12 @@ async def on_cat_select(c: CallbackQuery, widget: Select, manager: DialogManager
     if item_id in sel:
         sel.remove(item_id)
     else:
+        if len(sel) >= 3:
+            try:
+                await c.answer("Можно выбрать не более 3 тегов.", show_alert=True)
+            except Exception:
+                pass
+            return
         sel.add(item_id)
     manager.dialog_data["cats_sel"] = list(sel)
 
@@ -151,6 +173,11 @@ async def finalize_creation(c: CallbackQuery, widget: Button, manager: DialogMan
     description = manager.dialog_data.get("description", "")
     due_at_iso = manager.dialog_data.get("due_at_iso")
     categories = manager.dialog_data.get("cats_sel", [])
+
+    if len(categories) > 3:
+        await c.answer("Нельзя больше 3 тегов. Уберите лишние.", show_alert=True)
+        return
+
     api = BackendAPI()
     try:
         created = await api.create_task(
@@ -215,11 +242,13 @@ add_task_dialog = Dialog(
     ),
     Window(
         Const("Выбери категории (тапать по пунктам):"),
+        Format("Выбрано: {sel_count}/3"),
+        Format("Теги: {sel_list}"),
         ScrollingGroup(
             Select(
-                Format("{item[0]}"),
+                Format("{item[check]} {item[label]}"),
                 id="cats_select",
-                item_id_getter=lambda x: x[1],
+                item_id_getter=lambda x: x["id"],
                 items="cats",
                 on_click=on_cat_select,
             ),

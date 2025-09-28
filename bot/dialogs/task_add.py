@@ -10,8 +10,8 @@ from aiogram_dialog import DialogManager
 from aiogram_dialog.widgets.input import TextInput
 from aiogram_dialog.widgets.kbd import Button, Back, Cancel, Next, Select, ScrollingGroup
 from aiogram_dialog.widgets.text import Const, Format
-
 from services.api import BackendAPI
+
 from utils.dt import parse_user_datetime
 
 
@@ -164,6 +164,32 @@ async def finalize_creation(c: CallbackQuery, widget: Button, manager: DialogMan
     await manager.done()
 
 
+async def skip_desc(c: CallbackQuery, widget: Button, manager: DialogManager):
+    """
+    Очищает описание задачи и переключает диалог на шаг ввода срока выполнения.
+
+    Args:
+        c (CallbackQuery): Объект запроса обратного вызова.
+        widget (Button): Кнопка, вызвавшая действие.
+        manager (DialogManager): Менеджер диалога.
+    """
+    manager.dialog_data["description"] = ""
+    await manager.switch_to(AddTaskSG.due_at)
+
+
+async def skip_due(c: CallbackQuery, widget: Button, manager: DialogManager):
+    """
+    Сбрасывает значение даты выполнения задачи и переключает диалог на выбор категории.
+
+    Args:
+        c (CallbackQuery): Запрос из интерфейса Telegram.
+        widget (Button): Кнопка, вызвавшая данный обработчик.
+        manager (DialogManager): Менеджер диалога для управления состояниями и данными.
+    """
+    manager.dialog_data["due_at_iso"] = None
+    await manager.switch_to(AddTaskSG.categories)
+
+
 add_task_dialog = Dialog(
     Window(
         Const("Название задачи:"),
@@ -174,13 +200,15 @@ add_task_dialog = Dialog(
     Window(
         Const("Описание (или оставь пустым):"),
         TextInput(id="desc_input", on_success=on_desc_input),
+        Button(Const("Пропустить"), id="skip_desc", on_click=skip_desc),
         Back(Const("Назад")),
         Cancel(Const("Отмена")),
         state=AddTaskSG.description,
     ),
     Window(
-        Const("Дедлайн (формат 31.12.2025 14:30) или оставь пустым:"),
+        Const("Дедлайн (формат 31.12.2025 14:30) — можно пропустить:"),
         TextInput(id="due_input", on_success=on_due_input),
+        Button(Const("Пропустить"), id="skip_due", on_click=skip_due),
         Back(Const("Назад")),
         Cancel(Const("Отмена")),
         state=AddTaskSG.due_at,

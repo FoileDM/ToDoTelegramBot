@@ -10,8 +10,9 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 import os
+from datetime import timedelta
 from pathlib import Path
-from typing import Tuple
+from typing import Tuple, Any
 
 from dotenv import load_dotenv
 
@@ -193,7 +194,15 @@ CELERY_TASK_SERIALIZER = os.getenv("CELERY_TASK_SERIALIZER", "json")
 CELERY_RESULT_SERIALIZER = os.getenv("CELERY_RESULT_SERIALIZER", CELERY_TASK_SERIALIZER)
 CELERY_TIMEZONE = os.getenv("CELERY_TIMEZONE", TIME_ZONE)
 CELERY_ENABLE_UTC = parse_bool_env("CELERY_ENABLE_UTC", True)
-CELERY_IMPORTS = parse_csv_env("CELERY_IMPORTS", "services.telegram_notifications")
+CELERY_IMPORTS = parse_csv_env("CELERY_IMPORTS", "services.telegram_notifications,todo.tasks")
+
+TASK_DUE_REMINDER_PERIOD_SECONDS: int = int(os.getenv("TASK_DUE_REMINDER_PERIOD_SECONDS", 900))
+CELERY_BEAT_SCHEDULE: dict[str, dict[str, Any]] = {
+    "notify_upcoming_tasks": {
+        "task": "todo.notify_upcoming_tasks",
+        "schedule": timedelta(seconds=TASK_DUE_REMINDER_PERIOD_SECONDS),
+    }
+}
 
 # Telegram bot settings
 _TELEGRAM_BOT_TOKEN_RAW = os.getenv("BOT_TOKEN", "").strip()

@@ -14,6 +14,7 @@ from aiohttp import web
 
 from core.config import settings
 from dialogs.add_category import add_category_dialog, AddCategorySG
+from dialogs.category_edit import EditCategorySG, edit_category_dialog
 from dialogs.start import router as start_router
 from dialogs.task_add import add_task_dialog, AddTaskSG
 from dialogs.task_delete import DeleteTaskSG, delete_task_dialog
@@ -67,6 +68,7 @@ async def main():
     dp.include_router(edit_task_dialog)
     dp.include_router(delete_task_dialog)
     dp.include_router(add_category_dialog)
+    dp.include_router(edit_category_dialog)
 
     # инициализация диалогов (v2)
     setup_dialogs(dp)
@@ -91,6 +93,17 @@ async def main():
         """Запускает диалог редактирования задачи."""
         await dialog_manager.start(EditTaskSG.choose_task, mode=StartMode.RESET_STACK)
 
+    @dp.message(Command("deltask"))
+    async def start_delete_dialog(message: Message, dialog_manager: DialogManager) -> None:
+        """
+        Запускает диалог удаления задачи.
+
+        Args:
+            message: Message: Сообщение от пользователя, инициирующее команду.
+            dialog_manager: DialogManager: Менеджер диалогов для управления состояниями диалога.
+        """
+        await dialog_manager.start(DeleteTaskSG.choose_task, mode=StartMode.RESET_STACK)
+
     @dp.message(Command("addcat"))
     async def start_add_category(message: Message, dialog_manager: DialogManager):
         """
@@ -102,16 +115,13 @@ async def main():
         """
         await dialog_manager.start(AddCategorySG.name, mode=StartMode.RESET_STACK)
 
-    @dp.message(Command("deltask"))
-    async def start_delete_dialog(message: Message, dialog_manager: DialogManager) -> None:
-        """
-        Запускает диалог удаления задачи.
+    @dp.message(Command("editcat"))
+    async def start_edit_category(message: Message, dialog_manager: DialogManager):
+        """Запускает диалог переименования категории."""
 
-        Args:
-            message: Message: Сообщение от пользователя, инициирующее команду.
-            dialog_manager: DialogManager: Менеджер диалогов для управления состояниями диалога.
-        """
-        await dialog_manager.start(DeleteTaskSG.choose_task, mode=StartMode.RESET_STACK)
+        await dialog_manager.start(
+            EditCategorySG.choose_category, mode=StartMode.RESET_STACK
+        )
 
     await dp.start_polling(bot)
 

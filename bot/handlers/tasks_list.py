@@ -65,6 +65,7 @@ async def list_categories(message: Message):
             return
         txt = "\n".join(f"• {c['name']}" for c in cats)
         await message.answer(txt)
+        await message.answer("Чтобы переименовать категорию, воспользуйся командой /editcat.")
     except Exception as e:
         await message.answer(f"Ошибка запроса категорий: {e}")
     finally:
@@ -102,6 +103,17 @@ async def edit_task_hint(message: Message) -> None:
         message (Message): Сообщение от пользователя.
     """
     await message.answer("Введи /edittask чтобы изменить существующую задачу.")
+
+
+@router.message(F.text == "Редактировать категорию")
+async def edit_task_hint(message: Message) -> None:
+    """
+    Обрабатывает сообщение для изменения категории.
+
+    Args:
+        message (Message): Сообщение от пользователя.
+    """
+    await message.answer("Введи /editcat чтобы изменить существующую категорию.")
 
 
 @router.message(F.text == "Удалить задачу")

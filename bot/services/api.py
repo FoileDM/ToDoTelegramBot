@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import asyncio
-from typing import Any, Coroutine
+from typing import Any
 
 import httpx
 from httpx import Response
@@ -122,7 +122,7 @@ class BackendAPI:
         """
         resp = await self._request("GET", "/categories/", tg_id=tg_id)
         _raise_for_client(resp)
-        return resp.json().get("results", resp.json())  # router может вернуть list, но DRF paginator — dict
+        return resp.json().get("results", resp.json())
 
     async def create_category(self, *, tg_id: int, name: str) -> dict[str, Any]:
         """
@@ -139,6 +139,31 @@ class BackendAPI:
             ClientError: Возникает при некорректном ответе клиента.
         """
         resp = await self._request("POST", "/categories/", tg_id=tg_id, json={"name": name})
+        _raise_for_client(resp)
+        return resp.json()
+
+    async def patch_category(self, *, tg_id: int, category_id: str, name: str) -> dict[str, Any]:
+        """
+        Обновляет категорию с указанным идентификатором.
+
+        Args:
+            tg_id (int): Идентификатор пользователя Telegram.
+            category_id (str): Идентификатор категории.
+            name (str): Новое имя категории.
+
+        Returns:
+            dict[str, Any]: Ответ сервера с информацией о обновленной категории.
+
+        Raises:
+            ValueError: Ошибка обработки ответа клиента или некорректные данные.
+        """
+        payload = {"name": name}
+        resp = await self._request(
+            "PATCH",
+            f"/categories/{category_id}/",
+            tg_id=tg_id,
+            json=payload,
+        )
         _raise_for_client(resp)
         return resp.json()
 

@@ -5,6 +5,7 @@ from __future__ import annotations
 from aiogram import Router, F
 from aiogram.types import Message
 from services.api import BackendAPI
+
 from utils.fmt import fmt_task_line
 
 router = Router(name="tasks")
@@ -70,9 +71,21 @@ async def list_categories(message: Message):
 
 @router.message(F.text == "Добавить задачу")
 async def add_task_hint(message: Message):
-    """Обрабатывает сообщение для подсказки добавления задачи.
+    """
+    Обрабатывает сообщение для подсказки добавления задачи.
 
     Args:
         message (Message): Входящее сообщение от пользователя.
     """
     await message.answer("Введи /add чтобы создать задачу.")
+
+
+@router.message(F.text == "Добавить категорию")
+async def add_task_hint(message: Message):
+    """
+    Отправляет пользователю подсказку для добавления новой категории.
+
+    Args:
+        message (Message): Сообщение от пользователя.
+    """
+    await message.answer("Введи /addcat чтобы создать категорию.")

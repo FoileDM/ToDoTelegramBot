@@ -30,7 +30,7 @@ async def cmd_start(message: Message):
         kb = ReplyKeyboardMarkup(
             keyboard=[
                 [KeyboardButton(text="Мои задачи"), KeyboardButton(text="Добавить задачу")],
-                [KeyboardButton(text="Мои категории")],
+                [KeyboardButton(text="Мои категории"), KeyboardButton(text="Добавить категорию")],
             ],
             resize_keyboard=True,
         )

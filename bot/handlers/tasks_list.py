@@ -30,6 +30,7 @@ async def list_tasks(message: Message):
         items = resp.get("results", [])
         if not items:
             await message.answer("Пока пусто. Нажми «Добавить задачу».")
+            await message.answer("Для добавления задачи воспользуйся командой /add.")
             return
         lines = [fmt_task_line(t) for t in items[:10]]
         await message.answer("\n".join(lines))
